@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS links (
+    name VARCHAR(50) UNIQUE,
+    url VARCHAR(255),
+    user_id INT,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
