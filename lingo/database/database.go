@@ -51,6 +51,7 @@ func runMigrations(db *sql.DB) error {
 	}
 	return nil
 }
+
 func CreateUser(user *User) (User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	nil_user := User{}

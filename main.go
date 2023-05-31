@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"lingo/lingo/app"
 	"lingo/lingo/database"
 	"log"
 	"net/http"
@@ -29,11 +30,11 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", helloHandler)
+	db := database.InitDB("lingo.db")
+	http.HandleFunc("/links/", app.LinksHandler)
 	fmt.Println("hello")
-	db, err := database.Connect("lingo.db")
-	HandleError(err)
 	fmt.Println(db)
 	fmt.Printf("Starting server at port 8000\n")
-	err = http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe(":8000", nil)
 	HandleError(err)
 }
