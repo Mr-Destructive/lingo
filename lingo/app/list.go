@@ -15,21 +15,18 @@ type LinksTemplateData struct {
 }
 
 func LinksHandler(w http.ResponseWriter, r *http.Request) {
-	templates, err := template.ParseFiles("lingo/templates/test.html")
+	templates, err := template.ParseFiles("lingo/templates/links.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 	username := strings.Split(r.URL.Path, "/links/")
-	fmt.Println(username)
 	var userId *int
 	if len(username) > 1 {
 		userId, err = UserIdFromUsername(database.DB, username[1])
-		fmt.Println("UU: ", &userId)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	fmt.Println(userId)
 	links, err := retrieveLinksFromDB(database.DB, userId)
 	if err != nil {
 		log.Fatal(err)
@@ -38,7 +35,7 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 		Links: links,
 	}
 
-	err = templates.ExecuteTemplate(w, "test.html", data)
+	err = templates.ExecuteTemplate(w, "links.html", data)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,11 +43,9 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 
 func retrieveLinksFromDB(db *sql.DB, userId *int) ([]database.Link, error) {
 	query := "SELECT id, name, url, user_id FROM links"
-	fmt.Println("U:", userId)
 	if userId != nil {
 		query = fmt.Sprintf("SELECT id, name, url, user_id FROM links WHERE user_id = %d", *userId)
 	}
-	fmt.Println(query)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -81,7 +76,6 @@ func UserIdFromUsername(db *sql.DB, username string) (*int, error) {
 	row := db.QueryRow(query)
 	var userID int
 	err := row.Scan(&userID)
-	fmt.Println(userID)
 	if err != nil {
 		if userID == 0 {
 			return nil, nil

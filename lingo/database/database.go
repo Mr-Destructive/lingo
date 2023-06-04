@@ -88,3 +88,18 @@ func CreateUser(user *User) (User, error) {
 
 	return *user, nil
 }
+
+func CreateLink(db *sql.DB, link *Link) error {
+    statement, err := db.Prepare("INSERT INTO links(name, url, user_id) VALUES(?, ?, ?)")
+    if err != nil {
+        return err
+    }
+    defer statement.Close()
+
+    _, err = statement.Exec(link.Name, link.URL, link.User.ID)
+    if err != nil {
+        return err
+    }
+
+    return nil 
+}
