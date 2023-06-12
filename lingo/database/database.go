@@ -67,7 +67,7 @@ func CreateUser(user *User) (User, error) {
 	}
 	defer db.Close()
 
-	statement, err := db.Prepare("INSERT INTO users(username, email, password) VALUES(?, ?, ?)")
+	statement, err := db.Prepare("INSERT INTO user(username, name, email, password) VALUES(?, ?, ?)")
 	if err != nil {
 		log.Printf("failed to prepare insert statement %w", err)
 		return nil_user, errors.New("failed to create user")
@@ -89,17 +89,61 @@ func CreateUser(user *User) (User, error) {
 	return *user, nil
 }
 
+func GetUser(db *sql.DB, userId int64) (*User, error) {
+	user := User{}
+
+	row := db.QueryRow("SELECT id, username, email, password FROM user WHERE id = ?", userId)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func CreateLink(db *sql.DB, link *Link) error {
-    statement, err := db.Prepare("INSERT INTO links(name, url, user_id) VALUES(?, ?, ?)")
-    if err != nil {
-        return err
-    }
-    defer statement.Close()
+	statement, err := db.Prepare("INSERT INTO links(name, url, user_id) VALUES(?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
 
-    _, err = statement.Exec(link.Name, link.URL, link.User.ID)
-    if err != nil {
-        return err
-    }
+	_, err = statement.Exec(link.Name, link.URL, link.User.ID)
+	if err != nil {
+		return err
+	}
 
-    return nil 
+	return nil
+}
+
+func GetLink(db *sql.DB, linkId int) (*Link, error) {
+	link := Link{}
+
+	row := db.QueryRow("SELECT * FROM links WHERE id = ?", linkId)
+	err := row.Scan(&link.ID, &link.Name, &link.URL, &link.User.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := GetUser(db, link.User.ID)
+	if err != nil {
+		return nil, err
+	}
+	link.User = *user
+
+	return &link, nil
+}
+
+func UpdateLink(db *sql.DB, link *Link) error {
+	statement, err := db.Prepare("UPDATE links SET name = ?, url = ? WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	_, err = statement.Exec(link.Name, link.URL, link.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

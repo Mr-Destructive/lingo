@@ -14,6 +14,10 @@ type LinksTemplateData struct {
 	Links []database.Link
 }
 
+type LinkTemplateData struct {
+	Link database.Link
+}
+
 func LinksHandler(w http.ResponseWriter, r *http.Request) {
 	templates, err := template.ParseFiles("lingo/templates/links.html")
 	if err != nil {

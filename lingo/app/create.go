@@ -21,12 +21,12 @@ func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		url := r.FormValue("url")
 
-		if name == "" || url == "" || username == "" {
+		if name == "" || url == "" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		userId, err := UserIdFromUsername(database.DB, username)
+		userId, err := UserIdFromUsername(database.DB, name)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -41,6 +41,6 @@ func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		http.Redirect(w, r, "/links/"+username, http.StatusFound)
+		http.Redirect(w, r, "/links/"+name, http.StatusFound)
 	}
 }
