@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"html/template"
 	"lingo/lingo/database"
 	"log"
@@ -25,12 +26,22 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getUserData(r *http.Request) (database.User, error) {
+	username := r.FormValue("username")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	return database.User{
+		Email:    email,
+		Password: password,
+		Username: username,
+	}, nil
+}
+
 func getUser(r *http.Request) (database.User, error) {
 	username := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-	if user, err := UserByEmail(database.DB, email); user != nil {
-		log.Println("User already exists", err)
+	if user, _ := UserByEmail(database.DB, email); &user == nil {
 		errorname := "User already exists"
 		userError := errors.New(errorname)
 		return database.User{}, userError
@@ -43,7 +54,30 @@ func getUser(r *http.Request) (database.User, error) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	user, err := getUserData(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+	verified := DefaultUserService.VerifyUser(user)
+	fileName := "lingo/templates/profile.html"
+	if verified {
+		data := "Login Success"
+		RenderTemplate(w, data, fileName)
+		return
+	}
+	data := "Login Failed"
+	RenderTemplate(w, data, fileName)
+	return
+}
 
+func RenderTemplate(w http.ResponseWriter, data, fileName string) {
+	d := TemplateData{Data: data}
+	t, err := template.ParseFiles(fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t.ExecuteTemplate(w, "profile.html", d)
+	fmt.Println(d)
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {

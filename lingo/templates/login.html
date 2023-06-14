@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>Lingo</title>
+    </head>
+    <body>
+        <h1>Lingo</h1>
+        {{.Data}}
+        <form action="/auth/login" method="POST">
+            <label>Email</label>
+            <input type="email" name="email" />
+            <label>Password</label>
+            <input type="password" name="password" />
+            <button type="submit">Login</button>
+        </form>
+    </body>
+</html>

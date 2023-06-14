@@ -8,6 +8,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func UserExists(db *sql.DB, email, username string) bool {
+	userByEmail, _ := UserByEmail(db, email)
+	if userByEmail != nil {
+		return true
+	}
+	userByUsername, _ := UserByUsername(db, username)
+	if userByUsername != nil {
+		return true
+	}
+	return false
+}
+
 func UserByEmail(db *sql.DB, email string) (*database.User, error) {
 	query := "SELECT id, email, username, password FROM user WHERE email = ?"
 	row := db.QueryRow(query, email)
@@ -15,7 +27,7 @@ func UserByEmail(db *sql.DB, email string) (*database.User, error) {
 	user := database.User{}
 	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 	if err != nil && err.Error() != "sql: no rows in result set" {
-		return &user, err
+		return nil, err
 	}
 	return &user, nil
 }
@@ -73,4 +85,17 @@ func (userService) createUser(newUser database.User) error {
 func getPasswordHash(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hash), err
+}
+
+func (userService) VerifyUser(user database.User) bool {
+	dbUser, err := UserByEmail(database.DB, user.Email)
+	if err != nil {
+		return false
+	}
+	fmt.Println(dbUser.Password, user.Password)
+	err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password))
+	if err != nil {
+		return false
+	}
+	return true
 }
