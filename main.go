@@ -34,6 +34,7 @@ func main() {
 	http.HandleFunc("/links/", app.LinksHandler)
 	http.HandleFunc("/add/link/", app.AddLinkHandler)
 	http.HandleFunc("/edit/link/", app.EditLinkHandler)
+	http.HandleFunc("/auth/", app.AuthHandler)
 	fmt.Println(db)
 	fmt.Printf("Starting server at port 8000\n")
 	err := http.ListenAndServe(":8000", nil)

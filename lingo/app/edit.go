@@ -51,9 +51,7 @@ func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
 		link.Name = name
 		link.URL = url
 
-		fmt.Println(database.GetLink(database.DB, int(linkID)))
 		err = database.UpdateLink(database.DB, link)
-		fmt.Println(database.GetLink(database.DB, int(linkID)))
 		if err != nil {
 			log.Fatal(err)
 		}
