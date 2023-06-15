@@ -3,6 +3,7 @@
         <title>Lingo</title>
     </head>
     <body>
+        <h1>Hello, {{.User.Username}}</h1>
         <h2>Links</h2>
         {{range .Links}}
         <a href={{.URL}}>{{.Name}}</a> - <a href="/edit/link/{{.ID}}">Edit</a>

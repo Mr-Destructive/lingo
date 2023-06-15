@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS sessions (
+    id INT PRIMARY KEY,
+    user_id INT NOT NULL, 
+    session_id VARCHAR(255) UNIQUE NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+);

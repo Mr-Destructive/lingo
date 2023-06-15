@@ -2,7 +2,6 @@ package app
 
 import (
 	"database/sql"
-	"fmt"
 	"lingo/lingo/database"
 
 	"golang.org/x/crypto/bcrypt"
@@ -18,6 +17,18 @@ func UserExists(db *sql.DB, email, username string) bool {
 		return true
 	}
 	return false
+}
+
+func UserByID(db *sql.DB, userID int) (*database.User, error) {
+	query := "SELECT id, email, username, password FROM user WHERE id = ?"
+	row := db.QueryRow(query, userID)
+
+	user := database.User{}
+	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func UserByEmail(db *sql.DB, email string) (*database.User, error) {
@@ -77,7 +88,6 @@ func (userService) createUser(newUser database.User) error {
 		panic(err)
 	}
 	newId := lastId + 1
-	fmt.Println(newId)
 	database.DB.Exec("INSERT INTO user (id, email, username, password) VALUES (?, ?, ?, ?)", newId, newAuthUser.email, newAuthUser.username, newAuthUser.passwordHash)
 	return nil
 }
@@ -92,7 +102,6 @@ func (userService) VerifyUser(user database.User) bool {
 	if err != nil {
 		return false
 	}
-	fmt.Println(dbUser.Password, user.Password)
 	err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password))
 	if err != nil {
 		return false

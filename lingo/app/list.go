@@ -12,6 +12,7 @@ import (
 
 type LinksTemplateData struct {
 	Links []database.Link
+	User  database.User
 }
 
 type LinkTemplateData struct {
@@ -31,12 +32,20 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 	}
+	session, err := GetLoggedSession(w, r)
+	userId = &session.UserID
+
 	links, err := retrieveLinksFromDB(database.DB, userId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	user, err := UserByID(database.DB, *userId)
 	if err != nil {
 		log.Fatal(err)
 	}
 	data := LinksTemplateData{
 		Links: links,
+		User:  *user,
 	}
 
 	err = templates.ExecuteTemplate(w, "links.html", data)
@@ -46,10 +55,7 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func retrieveLinksFromDB(db *sql.DB, userId *int) ([]database.Link, error) {
-	query := "SELECT id, name, url, user_id FROM links"
-	if userId != nil {
-		query = fmt.Sprintf("SELECT id, name, url, user_id FROM links WHERE user_id = %d", *userId)
-	}
+	query := fmt.Sprintf("SELECT id, name, url, user_id FROM links WHERE user_id = %d", *userId)
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
