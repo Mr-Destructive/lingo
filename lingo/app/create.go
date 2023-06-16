@@ -3,6 +3,7 @@ package app
 import (
 	"html/template"
 	"lingo/lingo/database"
+	"lingo/lingo/middleware"
 	"log"
 	"net/http"
 )
@@ -25,8 +26,8 @@ func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-
-		userId, err := UserIdFromUsername(database.DB, name)
+		session, err := middleware.GetLoggedSession(w, r)
+		user, err := UserByID(database.DB, session.UserID)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -34,7 +35,7 @@ func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
 		link := database.Link{
 			Name: name,
 			URL:  url,
-			User: database.User{ID: int64(*userId)},
+			User: database.User{ID: int64(user.ID)},
 		}
 
 		err = database.CreateLink(database.DB, &link)

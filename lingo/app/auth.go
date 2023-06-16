@@ -1,36 +1,31 @@
 package app
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"html/template"
 	"lingo/lingo/database"
+	"lingo/lingo/middleware"
 	"log"
-	"math/rand"
 	"net/http"
-	"time"
 )
 
 type TemplateData struct {
 	Data string
 }
 
-type Session struct {
-	UserID    int
-	SessionID string
-}
-
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/auth/login":
-		Login(w, r)
+		http.Handle("/auth/login", middleware.AuthMiddleware(http.HandlerFunc(Login)))
 	case "/auth/signup":
 		Signup(w, r)
 	case "/auth/login-form":
 		getLoginForm(w, r)
 	case "/auth/signup-form":
 		getSignupForm(w, r)
+	case "/auth/logout":
+		http.Handle("/auth/logout", middleware.AuthMiddleware(http.HandlerFunc(LogOut)))
 	}
 }
 
@@ -69,23 +64,35 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	verified := DefaultUserService.VerifyUser(userForm)
-	fileName := "profile.html"
+	//userCtx := r.Context().Value("user")
+	//fileName := "profile.html"
 	if verified {
-		data := "Login Success"
-		RenderTemplate(w, data, fileName)
-		session, err := GetSession(w, r, int(user.ID))
+		session, err := middleware.GetSession(w, r, int(user.ID))
 		if err != nil {
-			log.Fatal(err)
 		}
+		setSessionCookie(w, session.SessionID)
 		user, err := UserByID(database.DB, int(session.UserID))
-		data = fmt.Sprintf("Welcome, %s!", user.Username)
-		RenderTemplate(w, data, fileName)
-		http.Redirect(w, r, "/links", http.StatusFound)
+		if err != nil {
+		}
+		RenderTemplate(w, fmt.Sprintf("Welcome, %s!", user.Username), "profile.html")
+	} else {
+		RenderTemplate(w, "Login failed", "login.html")
+	}
+}
+
+func LogOut(w http.ResponseWriter, r *http.Request) {
+	session, err := r.Cookie("lingo_session")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	data := "Login Failed"
-	RenderTemplate(w, data, fileName)
-	return
+	sessionToken := session.Value
+	middleware.DeleteSession(w, r, sessionToken)
+	http.Redirect(w, r, "/links", http.StatusSeeOther)
 }
 
 func RenderTemplate(w http.ResponseWriter, data, fileName string) {
@@ -96,49 +103,6 @@ func RenderTemplate(w http.ResponseWriter, data, fileName string) {
 		log.Fatal(err)
 	}
 	t.ExecuteTemplate(w, fileName, d)
-}
-
-const sessionIDChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
-const sessionIDLength = 32
-
-func NewSession(w http.ResponseWriter, r *http.Request, userID int) Session {
-	userSession, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		userSession = &http.Cookie{
-			Name:  "session_id",
-			Value: "",
-		}
-	}
-	if userSession.Value == "" {
-		var sessionID = make([]byte, sessionIDLength)
-		source := rand.NewSource(time.Now().UnixNano())
-		rand_source := rand.New(source)
-		for i := range sessionID {
-			sessionID[i] = sessionIDChars[rand_source.Intn(len(sessionIDChars))]
-		}
-
-		cookie := http.Cookie{
-			Name:  "session_id",
-			Value: string(sessionID),
-		}
-		http.SetCookie(w, &cookie)
-
-		db := database.DB
-		stmt, err := db.Prepare("INSERT INTO sessions (id, user_id, session_id) VALUES (?, ?, ?)")
-		if err != nil {
-			log.Fatal(err)
-		}
-		_, err = stmt.Exec(userID, userID, string(sessionID))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		session := Session{
-			UserID: userID,
-		}
-		return session
-	}
-	return Session{}
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {
@@ -188,66 +152,12 @@ func getSignupForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetSession(w http.ResponseWriter, r *http.Request, userID int) (Session, error) {
-	cookie, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		db := database.DB
-		var sessionID string
-		row := db.QueryRow("SELECT session_id FROM sessions WHERE user_id = ?", userID)
-		err = row.Scan(&sessionID)
-		if err == sql.ErrNoRows {
-			return NewSession(w, r, userID), nil
-		} else if err != nil {
-			return Session{}, err
-		}
-
-		cookie = &http.Cookie{
-			Name:  "session_id",
-			Value: sessionID,
-			Path:  "/",
-		}
-		http.SetCookie(w, cookie)
-	} else if err != nil {
-		return Session{}, err
+func setSessionCookie(w http.ResponseWriter, sessionID string) {
+	cookie := http.Cookie{
+		Name:     "lingo_session",
+		Value:    sessionID,
+		Path:     "/",
+		HttpOnly: true,
 	}
-
-	db := database.DB
-	var sessionID string
-	row := db.QueryRow("SELECT session_id FROM sessions WHERE session_id = ?", cookie.Value)
-	err = row.Scan(&sessionID)
-	if err == sql.ErrNoRows {
-		return NewSession(w, r, userID), nil
-	} else if err != nil {
-		return Session{}, err
-	}
-
-	return Session{
-		UserID:    userID,
-		SessionID: sessionID,
-	}, nil
-}
-
-func GetLoggedSession(w http.ResponseWriter, r *http.Request) (Session, error) {
-	cookie, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		return Session{}, err
-	} else if err != nil {
-		return Session{}, err
-	}
-
-	db := database.DB
-	var userID int
-	var sessionID string
-	row := db.QueryRow("SELECT user_id, session_id FROM sessions WHERE session_id = ?", cookie.Value)
-	err = row.Scan(&userID, &sessionID)
-	if err == sql.ErrNoRows {
-		return Session{}, err
-	} else if err != nil {
-		return Session{}, err
-	}
-
-	return Session{
-		UserID:    userID,
-		SessionID: sessionID,
-	}, nil
+	http.SetCookie(w, &cookie)
 }

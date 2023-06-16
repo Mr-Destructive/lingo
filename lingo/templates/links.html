@@ -3,10 +3,17 @@
         <title>Lingo</title>
     </head>
     <body>
-        <h1>Hello, {{.User.Username}}</h1>
-        <h2>Links</h2>
-        {{range .Links}}
-        <a href={{.URL}}>{{.Name}}</a> - <a href="/edit/link/{{.ID}}">Edit</a>
+        {{if .User.Username}}
+            <a href="/auth/logout">Logout</a>
+            <h1>Hello, {{.User.Username}}</h1>
+            <h2>Links</h2>
+            <a href="/add/link">Add Link</a>
+            {{range .Links}}
+            <a href={{.URL}}>{{.Name}}</a> - <a href="/edit/link/{{.ID}}">Edit</a>
+            {{end}}
+        {{else}}
+            <a href="/auth/login-form">Login</a>
+            <a href="/auth/signup-form">Signup</a>
         {{end}}
     </body>
 </html>

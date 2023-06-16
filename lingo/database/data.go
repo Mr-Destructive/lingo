@@ -20,6 +20,11 @@ type Link struct {
 	User User   `json:"user"`
 }
 
+type Session struct {
+	UserID    int
+	SessionID string
+}
+
 var DB *sql.DB
 
 func InitDB(dbPath string) error {

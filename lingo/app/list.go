@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"lingo/lingo/database"
+	"lingo/lingo/middleware"
 	"log"
 	"net/http"
 	"strings"
@@ -32,12 +33,12 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 	}
-	session, err := GetLoggedSession(w, r)
+	session, err := middleware.GetLoggedSession(w, r)
 	userId = &session.UserID
 
 	links, err := retrieveLinksFromDB(database.DB, userId)
-	if err != nil {
-		log.Fatal(err)
+	if err == sql.ErrNoRows {
+		log.Println(err)
 	}
 	user, err := UserByID(database.DB, *userId)
 	if err != nil {

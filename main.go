@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lingo/lingo/app"
 	"lingo/lingo/database"
+	"lingo/lingo/middleware"
 	"log"
 	"net/http"
 )
@@ -32,7 +33,7 @@ func main() {
 	db := database.InitDB("lingo.db")
 	http.HandleFunc("/", helloHandler)
 	http.HandleFunc("/links/", app.LinksHandler)
-	http.HandleFunc("/add/link/", app.AddLinkHandler)
+	http.Handle("/add/link/", middleware.AuthMiddleware(http.HandlerFunc(app.AddLinkHandler)))
 	http.HandleFunc("/edit/link/", app.EditLinkHandler)
 	http.HandleFunc("/auth/", app.AuthHandler)
 	fmt.Println(db)
