@@ -35,6 +35,7 @@ func main() {
 	http.HandleFunc("/links/", app.LinksHandler)
 	http.Handle("/add/link/", middleware.AuthMiddleware(http.HandlerFunc(app.AddLinkHandler)))
 	http.HandleFunc("/edit/link/", app.EditLinkHandler)
+    http.HandleFunc("/delete/link/", app.DeleteLinkHandler)
 	http.HandleFunc("/auth/", app.AuthHandler)
 	fmt.Println(db)
 	fmt.Printf("Starting server at port 8000\n")
