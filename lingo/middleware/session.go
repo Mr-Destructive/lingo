@@ -23,6 +23,9 @@ func GetSession(w http.ResponseWriter, r *http.Request, userID int) (database.Se
 func GetLoggedSession(w http.ResponseWriter, r *http.Request) (database.Session, error) {
 	cookie, err := r.Cookie("lingo_session")
 	if err != nil {
+        if err == http.ErrNoCookie {
+            return database.Session{}, nil
+        }
 		return database.Session{}, err
 	}
 	sessionID := cookie.Value

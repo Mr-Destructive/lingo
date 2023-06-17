@@ -27,23 +27,34 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	username := strings.Split(r.URL.Path, "/links/")
 	var userId *int
-	if len(username) > 1 {
+	session, err := middleware.GetLoggedSession(w, r)
+	if len(username) > 1 && username[1] != "" {
 		userId, err = UserIdFromUsername(database.DB, username[1])
+		if err != nil || userId == nil {
+			return
+		}
+	} else {
 		if err != nil {
 			log.Fatal(err)
 		}
+		userId = &session.UserID
 	}
-	session, err := middleware.GetLoggedSession(w, r)
-	userId = &session.UserID
-
+	loggedUser := int64(session.UserID)
 	links, err := retrieveLinksFromDB(database.DB, userId)
+	for i, link := range links {
+		if loggedUser != link.UserID {
+			id := 0
+			links[i].ID = int64(id)
+		}
+	}
 	if err == sql.ErrNoRows {
-		log.Println(err)
+		return
 	}
 	user, err := UserByID(database.DB, *userId)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	data := LinksTemplateData{
 		Links: links,
 		User:  *user,
@@ -66,8 +77,7 @@ func retrieveLinksFromDB(db *sql.DB, userId *int) ([]database.Link, error) {
 	links := []database.Link{}
 	for rows.Next() {
 		link := database.Link{}
-		var userID int64
-		err := rows.Scan(&link.ID, &link.Name, &link.URL, &userID)
+		err := rows.Scan(&link.ID, &link.Name, &link.URL, &link.UserID)
 		if err != nil {
 			return nil, err
 		}

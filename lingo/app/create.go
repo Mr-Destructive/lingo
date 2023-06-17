@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"html/template"
 	"lingo/lingo/database"
 	"lingo/lingo/middleware"
@@ -31,11 +32,12 @@ func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		fmt.Println(user)
 
 		link := database.Link{
 			Name: name,
 			URL:  url,
-			User: database.User{ID: int64(user.ID)},
+			UserID: user.ID,
 		}
 
 		err = database.CreateLink(database.DB, &link)

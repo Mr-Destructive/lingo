@@ -2,6 +2,7 @@ package app
 
 import (
 	"database/sql"
+	"fmt"
 	"lingo/lingo/database"
 
 	"golang.org/x/crypto/bcrypt"
@@ -49,6 +50,9 @@ func UserByUsername(db *sql.DB, username string) (*database.User, error) {
 
 	user := database.User{}
 	err := row.Scan(&user.ID, &user.Username, &user.Password)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user %s not found", username)
+	}
 	if err != nil {
 		return &user, err
 	}

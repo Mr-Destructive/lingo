@@ -1,9 +1,9 @@
 package app
 
 import (
-	"fmt"
 	"html/template"
 	"lingo/lingo/database"
+	"lingo/lingo/middleware"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,6 +11,11 @@ import (
 )
 
 func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := middleware.GetLoggedSession(w, r)
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusUnauthorized)
+		return
+	}
 	templates, err := template.ParseFiles("lingo/templates/editLink.html")
 	linkFragment := strings.Join(strings.Split(r.URL.String(), "/")[3:], "")
 	linkID, err := strconv.ParseInt(linkFragment, 10, 64)
@@ -21,6 +26,10 @@ func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// Show the edit link form
 		link, err := database.GetLink(database.DB, int(linkID))
+		if int64(session.UserID) != link.UserID {
+			http.Redirect(w, r, "/", http.StatusForbidden)
+			return
+		}
 		data := LinkTemplateData{
 			Link: *link,
 		}
@@ -29,7 +38,6 @@ func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 	} else {
-		fmt.Println(linkID)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -44,17 +52,23 @@ func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		link, err := database.GetLink(database.DB, int(linkID))
+
+		if int64(session.UserID) != link.UserID {
+			http.Redirect(w, r, "/", http.StatusForbidden)
+			return
+		}
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		link.Name = name
 		link.URL = url
+		user, err := UserByID(database.DB, int(link.UserID))
 
 		err = database.UpdateLink(database.DB, link)
 		if err != nil {
 			log.Fatal(err)
 		}
-		http.Redirect(w, r, "/links/"+link.User.Username, http.StatusFound)
+		http.Redirect(w, r, "/links/"+user.Username, http.StatusFound)
 	}
 }

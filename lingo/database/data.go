@@ -14,10 +14,10 @@ type User struct {
 }
 
 type Link struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-	URL  string `json:"link"`
-	User User   `json:"user"`
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	URL    string `json:"link"`
+	UserID int64  `json:"user_id"`
 }
 
 type Session struct {

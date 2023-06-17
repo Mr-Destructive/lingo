@@ -9,7 +9,8 @@
             <h2>Links</h2>
             <a href="/add/link">Add Link</a>
             {{range .Links}}
-            <a href={{.URL}}>{{.Name}}</a> - <a href="/edit/link/{{.ID}}">Edit</a>
+            <a href={{.URL}}>{{.Name}}</a> -
+            <a href="/edit/link/{{.ID}}">Edit</a>
             {{end}}
         {{else}}
             <a href="/auth/login-form">Login</a>

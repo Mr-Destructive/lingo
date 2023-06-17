@@ -107,7 +107,7 @@ func CreateLink(db *sql.DB, link *Link) error {
 	}
 	defer statement.Close()
 
-	_, err = statement.Exec(link.Name, link.URL, link.User.ID)
+	_, err = statement.Exec(link.Name, link.URL, link.UserID)
 	if err != nil {
 		return err
 	}
@@ -119,16 +119,16 @@ func GetLink(db *sql.DB, linkId int) (*Link, error) {
 	link := Link{}
 
 	row := db.QueryRow("SELECT * FROM links WHERE id = ?", linkId)
-	err := row.Scan(&link.ID, &link.Name, &link.URL, &link.User.ID)
+	err := row.Scan(&link.ID, &link.Name, &link.URL, &link.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := GetUser(db, link.User.ID)
+	user, err := GetUser(db, link.UserID)
 	if err != nil {
 		return nil, err
 	}
-	link.User = *user
+	link.UserID = user.ID
 
 	return &link, nil
 }
