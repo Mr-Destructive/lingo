@@ -21,7 +21,11 @@ type LinkTemplateData struct {
 }
 
 func LinksHandler(w http.ResponseWriter, r *http.Request) {
-	templates, err := template.ParseFiles("lingo/templates/links.html")
+	files := []string{
+		"lingo/templates/base.tmpl",
+		"lingo/templates/links.html",
+	}
+	templates, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,7 +64,7 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 		User:  *user,
 	}
 
-	err = templates.ExecuteTemplate(w, "links.html", data)
+	err = templates.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		log.Fatal(err)
 	}

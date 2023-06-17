@@ -1,25 +1,20 @@
-<html>
-    <head>
-        <title>Lingo</title>
-    </head>
-    <body>
-        {{if .User.Username}}
-            <a href="/auth/logout">Logout</a>
-            <h1>Hello, {{.User.Username}}</h1>
-            <h2>Links</h2>
-            <a href="/add/link">Add Link</a>
-            <ul>
-            {{range .Links}}
-            <li>
-                <a href={{.URL}}>{{.Name}}</a> 
-            </li>
-                <a href="/edit/link/{{.ID}}">Edit</a>
-                <a href="/delete/link/{{.ID}}">Delete</a>
-            {{end}}
-            </ul>
-        {{else}}
-            <a href="/auth/login-form">Login</a>
-            <a href="/auth/signup-form">Signup</a>
+{{define "main"}}
+    {{if .User.Username}}
+        <a href="/auth/logout">Logout</a>
+        <h1>Hello, {{.User.Username}}</h1>
+        <h2>Links</h2>
+        <a href="/add/link">Add Link</a>
+        <ul>
+        {{range .Links}}
+        <li>
+            <a href={{.URL}}>{{.Name}}</a> 
+        </li>
+            <a href="/edit/link/{{.ID}}">Edit</a>
+            <a href="/delete/link/{{.ID}}">Delete</a>
         {{end}}
-    </body>
-</html>
+        </ul>
+    {{else}}
+        <a href="/auth/login-form">Login</a>
+        <a href="/auth/signup-form">Signup</a>
+    {{end}}
+{{end}}

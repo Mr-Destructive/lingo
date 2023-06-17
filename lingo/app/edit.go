@@ -16,7 +16,11 @@ func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusUnauthorized)
 		return
 	}
-	templates, err := template.ParseFiles("lingo/templates/editLink.html")
+	files := []string{
+		"lingo/templates/base.tmpl",
+		"lingo/templates/editLink.html",
+	}
+	templates, err := template.ParseFiles(files...)
 	linkFragment := strings.Join(strings.Split(r.URL.String(), "/")[3:], "")
 	linkID, err := strconv.ParseInt(linkFragment, 10, 64)
 	if err != nil {
@@ -33,7 +37,7 @@ func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
 		data := LinkTemplateData{
 			Link: *link,
 		}
-		err = templates.ExecuteTemplate(w, "editLink.html", data.Link)
+		err = templates.ExecuteTemplate(w, "base", data.Link)
 		if err != nil {
 			log.Fatal(err)
 		}

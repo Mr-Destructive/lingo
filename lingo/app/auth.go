@@ -97,12 +97,16 @@ func LogOut(w http.ResponseWriter, r *http.Request) {
 
 func RenderTemplate(w http.ResponseWriter, data, fileName string) {
 	d := TemplateData{Data: data}
-	filepath := fmt.Sprintf("lingo/templates/%s", fileName)
-	t, err := template.ParseFiles(filepath)
+	files := []string{
+		"lingo/templates/base.tmpl",
+		"lingo/templates/" + fileName,
+	}
+	//filepath := fmt.Sprintf("lingo/templates/%s", fileName)
+	t, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Fatal(err)
 	}
-	t.ExecuteTemplate(w, fileName, d)
+	t.ExecuteTemplate(w, "base", d)
 }
 
 func Signup(w http.ResponseWriter, r *http.Request) {

@@ -1,18 +1,12 @@
-<html>
-    <head>
-        <title>Lingo</title>
-    </head>
-    <body>
-        <h1>Lingo</h1>
-        {{.Data}}
-        <form action="/auth/signup" method="POST">
-            <label>Username</label>
-            <input type="text" name="username" />
-            <label>Email</label>
-            <input type="email" name="email" />
-            <label>Password</label>
-            <input type="password" name="password" />
-            <button type="submit">Sign Up</button>
-        </form>
-    </body>
-</html>
+{{define "main"}}
+    {{.Data}}
+    <form action="/auth/signup" method="POST">
+        <label>Username</label>
+        <input type="text" name="username" />
+        <label>Email</label>
+        <input type="email" name="email" />
+        <label>Password</label>
+        <input type="password" name="password" />
+        <button type="submit">Sign Up</button>
+    </form>
+{{end}}

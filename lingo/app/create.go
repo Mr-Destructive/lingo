@@ -10,12 +10,16 @@ import (
 )
 
 func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
+	files := []string{
+		"lingo/templates/base.tmpl",
+		"lingo/templates/addLink.html",
+	}
 	if r.Method == http.MethodGet {
-		templates, err := template.ParseFiles("lingo/templates/addLink.html")
+		templates, err := template.ParseFiles(files...)
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = templates.ExecuteTemplate(w, "addLink.html", nil)
+		err = templates.ExecuteTemplate(w, "base", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -35,8 +39,8 @@ func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(user)
 
 		link := database.Link{
-			Name: name,
-			URL:  url,
+			Name:   name,
+			URL:    url,
 			UserID: user.ID,
 		}
 

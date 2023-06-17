@@ -17,7 +17,11 @@ func DeleteLinkHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusUnauthorized)
 		return
 	}
-	templates, err := template.ParseFiles("lingo/templates/deleteLink.html")
+	files := []string{
+		"lingo/templates/base.tmpl",
+		"lingo/templates/deleteLink.html",
+	}
+	templates, err := template.ParseFiles(files...)
 	linkFragment := strings.Join(strings.Split(r.URL.String(), "/")[3:], "")
 	linkID, err := strconv.ParseInt(linkFragment, 10, 64)
 	if err != nil {
@@ -36,7 +40,7 @@ func DeleteLinkHandler(w http.ResponseWriter, r *http.Request) {
 		data := LinkTemplateData{
 			Link: *link,
 		}
-		err = templates.ExecuteTemplate(w, "deleteLink.html", data.Link)
+		err = templates.ExecuteTemplate(w, "base", data.Link)
 		return
 	} else if r.Method == http.MethodPost {
 		if int64(session.UserID) != link.UserID {
