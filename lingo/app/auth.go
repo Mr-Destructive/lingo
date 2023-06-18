@@ -31,7 +31,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 func getUserData(r *http.Request) (database.User, error) {
 	email := r.FormValue("email")
-	user, err := UserByEmail(database.DB, email)
+	user, err := database.UserByEmail(database.DB, email)
 	if err != nil {
 		return database.User{}, err
 	}
@@ -42,7 +42,7 @@ func getUser(r *http.Request) (database.User, error) {
 	username := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-	if user, _ := UserByEmail(database.DB, email); &user == nil {
+	if user, _ := database.UserByEmail(database.DB, email); &user == nil {
 		errorname := "User already exists"
 		userError := errors.New(errorname)
 		return database.User{}, userError
@@ -63,7 +63,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	verified := DefaultUserService.VerifyUser(userForm)
+	verified := middleware.DefaultUserService.VerifyUser(userForm)
 	//userCtx := r.Context().Value("user")
 	//fileName := "profile.html"
 	if verified {
@@ -71,7 +71,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 		}
 		setSessionCookie(w, session.SessionID)
-		user, err := UserByID(database.DB, int(session.UserID))
+		user, err := database.UserByID(database.DB, int(session.UserID))
 		if err != nil {
 		}
 		RenderTemplate(w, fmt.Sprintf("Welcome, %s!", user.Username), "profile.html")
@@ -117,7 +117,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		t.ExecuteTemplate(w, "signup.html", data)
 		return
 	}
-	err = DefaultUserService.createUser(newUser)
+	err = middleware.DefaultUserService.CreateUser(newUser)
 	fileName := "lingo/templates/signup.html"
 	if err != nil {
 		t, _ := template.ParseFiles(fileName)

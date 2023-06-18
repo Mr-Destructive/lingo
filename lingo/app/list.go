@@ -44,7 +44,7 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 		userId = &session.UserID
 	}
 	loggedUser := int64(session.UserID)
-	links, err := RetrieveLinksFromDB(database.DB, userId)
+	links, err := database.RetrieveLinksFromDB(database.DB, userId)
 	for i, link := range links {
 		if loggedUser != link.UserID {
 			id := 0
@@ -54,7 +54,7 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 	if err == sql.ErrNoRows {
 		return
 	}
-	user, err := UserByID(database.DB, *userId)
+	user, err := database.UserByID(database.DB, *userId)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,32 +68,6 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func RetrieveLinksFromDB(db *sql.DB, userId *int) ([]database.Link, error) {
-	query := fmt.Sprintf("SELECT id, name, url, user_id FROM links WHERE user_id = %d", *userId)
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	links := []database.Link{}
-	for rows.Next() {
-		link := database.Link{}
-		err := rows.Scan(&link.ID, &link.Name, &link.URL, &link.UserID)
-		if err != nil {
-			return nil, err
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		links = append(links, link)
-	}
-
-	return links, nil
 }
 
 func UserIdFromUsername(db *sql.DB, username string) (*int, error) {

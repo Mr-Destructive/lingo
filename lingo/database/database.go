@@ -147,3 +147,95 @@ func UpdateLink(db *sql.DB, link *Link) error {
 
 	return nil
 }
+
+func RetrieveLinksFromDB(db *sql.DB, userId *int) ([]Link, error) {
+	query := fmt.Sprintf("SELECT id, name, url, user_id FROM links WHERE user_id = %d", *userId)
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	links := []Link{}
+	for rows.Next() {
+		link := Link{}
+		err := rows.Scan(&link.ID, &link.Name, &link.URL, &link.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, link)
+	}
+
+	return links, nil
+}
+
+func DeleteLink(db *sql.DB, link *Link) error {
+	statement, err := db.Prepare("DELETE FROM links WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	_, err = statement.Exec(link.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UserExists(db *sql.DB, email, username string) bool {
+	userByEmail, _ := UserByEmail(db, email)
+	if userByEmail != nil {
+		return true
+	}
+	userByUsername, _ := UserByUsername(db, username)
+	if userByUsername != nil {
+		return true
+	}
+	return false
+}
+
+func UserByID(db *sql.DB, userID int) (*User, error) {
+	query := "SELECT id, email, username, password FROM user WHERE id = ?"
+	row := db.QueryRow(query, userID)
+
+	user := User{}
+	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func UserByEmail(db *sql.DB, email string) (*User, error) {
+	query := "SELECT id, email, username, password FROM user WHERE email = ?"
+	row := db.QueryRow(query, email)
+
+	user := User{}
+	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func UserByUsername(db *sql.DB, username string) (*User, error) {
+	query := "SELECT id, username, password FROM user WHERE username = ?"
+	row := db.QueryRow(query, username)
+
+	user := User{}
+	err := row.Scan(&user.ID, &user.Username, &user.Password)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user %s not found", username)
+	}
+	if err != nil {
+		return &user, err
+	}
+
+	return &user, nil
+}

@@ -67,7 +67,7 @@ func EditLinkHandler(w http.ResponseWriter, r *http.Request) {
 
 		link.Name = name
 		link.URL = url
-		user, err := UserByID(database.DB, int(link.UserID))
+		user, err := database.UserByID(database.DB, int(link.UserID))
 
 		err = database.UpdateLink(database.DB, link)
 		if err != nil {

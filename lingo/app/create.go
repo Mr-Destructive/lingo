@@ -32,7 +32,7 @@ func AddLinkHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		session, err := middleware.GetLoggedSession(w, r)
-		user, err := UserByID(database.DB, session.UserID)
+		user, err := database.UserByID(database.DB, session.UserID)
 		if err != nil {
 			log.Fatal(err)
 		}
