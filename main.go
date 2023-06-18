@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"lingo/lingo/api"
 	"lingo/lingo/app"
 	"lingo/lingo/database"
 	"lingo/lingo/middleware"
@@ -35,8 +36,10 @@ func main() {
 	http.HandleFunc("/links/", app.LinksHandler)
 	http.Handle("/add/link/", middleware.AuthMiddleware(http.HandlerFunc(app.AddLinkHandler)))
 	http.HandleFunc("/edit/link/", app.EditLinkHandler)
-    http.HandleFunc("/delete/link/", app.DeleteLinkHandler)
+	http.HandleFunc("/delete/link/", app.DeleteLinkHandler)
 	http.HandleFunc("/auth/", app.AuthHandler)
+
+	http.HandleFunc("/api/v1/", api.APIHandler)
 	fmt.Println(db)
 	fmt.Printf("Starting server at port 8000\n")
 	err := http.ListenAndServe(":8000", nil)

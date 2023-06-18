@@ -135,22 +135,30 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func getLoginForm(w http.ResponseWriter, r *http.Request) {
-	templates, err := template.ParseFiles("lingo/templates/login.html")
+	files := []string{
+		"lingo/templates/base.tmpl",
+		"lingo/templates/login.html",
+	}
+	templates, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = templates.ExecuteTemplate(w, "login.html", nil)
+	err = templates.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func getSignupForm(w http.ResponseWriter, r *http.Request) {
-	templates, err := template.ParseFiles("lingo/templates/signup.html")
+	files := []string{
+		"lingo/templates/base.tmpl",
+		"lingo/templates/signup.html",
+	}
+	templates, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = templates.ExecuteTemplate(w, "signup.html", nil)
+	err = templates.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

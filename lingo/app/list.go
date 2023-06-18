@@ -44,7 +44,7 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 		userId = &session.UserID
 	}
 	loggedUser := int64(session.UserID)
-	links, err := retrieveLinksFromDB(database.DB, userId)
+	links, err := RetrieveLinksFromDB(database.DB, userId)
 	for i, link := range links {
 		if loggedUser != link.UserID {
 			id := 0
@@ -70,7 +70,7 @@ func LinksHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func retrieveLinksFromDB(db *sql.DB, userId *int) ([]database.Link, error) {
+func RetrieveLinksFromDB(db *sql.DB, userId *int) ([]database.Link, error) {
 	query := fmt.Sprintf("SELECT id, name, url, user_id FROM links WHERE user_id = %d", *userId)
 	rows, err := db.Query(query)
 	if err != nil {
