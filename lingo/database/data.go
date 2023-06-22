@@ -25,6 +25,21 @@ type Session struct {
 	SessionID string
 }
 
+type Project struct {
+    ID       int64  `json:"id"`
+    Name     string `json:"name"`
+    Url      string `json:"url"`
+    UserID   int64  `json:"user_id"`
+}
+
+type Profile struct {
+    ID       int64  `json:"id"`
+    UserID   int64  `json:"user_id"`
+    Color    string `json:"color"`
+    Avatar   string `json:"avatar"`
+    Links    []Link `json:"links"`
+}
+
 var DB *sql.DB
 
 func InitDB(dbPath string) error {

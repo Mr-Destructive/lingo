@@ -7,8 +7,6 @@ import (
 	"lingo/lingo/database"
 	"lingo/lingo/middleware"
 	"net/http"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -30,6 +28,9 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if strings.HasPrefix(r.URL.Path, "/api/v1/delete/link") && r.Method == http.MethodDelete {
 		deleteLinkHandler(w, r)
+		return
+	} else if r.URL.Path == "/api/v1/profile" && r.Method == http.MethodGet {
+		ProfileAPIHandler(w, r)
 		return
 	}
 }
@@ -186,11 +187,10 @@ func editLinkHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	re := regexp.MustCompile(`/api/v1/edit/link/(\d+)`)
-	match := re.FindStringSubmatch(r.URL.Path)
-	if match != nil {
-		linkID, _ := strconv.Atoi(match[1])
-		link, err := database.GetLink(database.DB, linkID)
+	pathSegments := strings.Split(r.URL.Path, "/")
+	linkName := pathSegments[len(pathSegments)-1]
+	if linkName != "" {
+		link, err := database.GetLinkByName(database.DB, linkName, session.UserID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -218,7 +218,7 @@ func editLinkHandler(w http.ResponseWriter, r *http.Request) {
 		link.Name = linkBody.Name
 		link.URL = linkBody.Url
 		err = database.UpdateLink(database.DB, link)
-		editedLink, err := database.GetLink(database.DB, int(linkID))
+		editedLink, err := database.GetLink(database.DB, int(link.ID))
 		if err == nil {
 			data := struct {
 				message database.Link
@@ -243,11 +243,10 @@ func deleteLinkHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	re := regexp.MustCompile(`/api/v1/delete/link/(\d+)`)
-	match := re.FindStringSubmatch(r.URL.Path)
-	if match != nil {
-		linkID, _ := strconv.Atoi(match[1])
-		link, err := database.GetLink(database.DB, linkID)
+	pathSegments := strings.Split(r.URL.Path, "/")
+	linkName := pathSegments[len(pathSegments)-1]
+	if linkName != "" {
+		link, err := database.GetLinkByName(database.DB, linkName, session.UserID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

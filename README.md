@@ -12,16 +12,15 @@ Database - SQLite
 - Profile
 
 ### TODOs:
-
-- Add Bio
-- Add User Projects
-- Use CSS or Tailwind CSS in templates
-- Use HTMX
-- Create API
-- Dockerize
-- Documentation for self hosting
+- [ ] Add Bio
+- [ ] Add User Projects
+- [ ] Use CSS or Tailwind CSS in templates
+- [ ] Use HTMX
+- [x] Create API
+- [ ] Dockerize
+- [ ] Documentation for self hosting
 
 ### Dependencies:
 
-- [SQLite](github.com/mattn/go-sqlite3) driver for golang
-- [Cryto](golang.org/x/crypto) package for encryption of password
+- [SQLite](https://github.com/mattn/go-sqlite3) driver for golang
+- [Cryto](https://golang.org/x/crypto) package for encryption of password

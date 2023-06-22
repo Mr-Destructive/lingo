@@ -132,6 +132,23 @@ func GetLink(db *sql.DB, linkId int) (*Link, error) {
 
 	return &link, nil
 }
+func GetLinkByName(db *sql.DB, linkName string, userID int) (*Link, error) {
+	link := Link{}
+
+	row := db.QueryRow("SELECT * FROM links WHERE name = ? AND user_id = ?", linkName, userID)
+	err := row.Scan(&link.ID, &link.Name, &link.URL, &link.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := GetUser(db, link.UserID)
+	if err != nil {
+		return nil, err
+	}
+	link.UserID = user.ID
+
+	return &link, nil
+}
 
 func UpdateLink(db *sql.DB, link *Link) error {
 	statement, err := db.Prepare("UPDATE links SET name = ?, url = ? WHERE id = ?")
@@ -238,4 +255,32 @@ func UserByUsername(db *sql.DB, username string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func GetProfile(db *sql.DB, userId int) (*Profile, error) {
+	query := "SELECT id, color, avatar FROM profiles WHERE user_id = ?"
+	linkQuery := "SELECT id, name, url FROM links WHERE profile_id = ?"
+	row := db.QueryRow(query, userId)
+	profile := Profile{}
+	err := row.Scan(&profile.ID, &profile.Color, &profile.Avatar)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := db.Query(linkQuery, profile.ID)
+	links := []Link{}
+	for rows.Next() {
+		link := Link{}
+		err := rows.Scan(&link.ID, &link.Name, &link.URL)
+		if err != nil {
+			return nil, err
+		}
+		links = append(links, link)
+	}
+	profile.Links = links
+	profile.UserID = int64(userId)
+
+	if err != nil {
+		return nil, err
+	}
+	return &profile, nil
 }
