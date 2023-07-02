@@ -284,3 +284,22 @@ func GetProfile(db *sql.DB, userId int) (*Profile, error) {
 	}
 	return &profile, nil
 }
+
+func GetProject(db *sql.DB, userId int) (*[]Project, error) {
+	query := "SELECT id, url, name FROM projects WHERE user_id = ?"
+	projects := []Project{}
+	rows, err := db.Query(query, userId)
+	for rows.Next() {
+		project := Project{}
+		err := rows.Scan(&project.ID, &project.Name, &project.URL)
+		if err != nil {
+			return nil, err
+		}
+		projects = append(projects, project)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return &projects, nil
+}

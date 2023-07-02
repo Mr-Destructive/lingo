@@ -32,6 +32,9 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/api/v1/profile" && r.Method == http.MethodGet {
 		ProfileAPIHandler(w, r)
 		return
+	} else if r.URL.Path == "/api/v1/projects" && r.Method == http.MethodGet {
+		ProjectAPIHandler(w, r)
+		return
 	}
 }
 
